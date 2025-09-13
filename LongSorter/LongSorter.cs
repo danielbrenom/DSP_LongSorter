@@ -50,7 +50,8 @@ namespace LongSorter
                     if (ins[i].opcode == OpCodes.Stfld && ins[i].operand is FieldInfo o && o == f)
                     {
                         //EBuildCondition.TooFar == 13
-                        if (ins[i - 1].opcode == OpCodes.Ldc_I4_S && ins[i - 1].operand is SByte o2 && o2 == 13
+                        const int tooFarOperand = (int)EBuildCondition.TooFar;
+                        if (ins[i - 1].opcode != OpCodes.Ldc_I4_S || !(ins[i - 1].operand is sbyte o2) || o2 != tooFarOperand
                             && (ins[i - 3].opcode == OpCodes.Ble_Un || ins[i - 3].opcode == OpCodes.Ble_Un_S))
                         {
                             patchPos.Add(i - 5);
