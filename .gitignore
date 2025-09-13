@@ -351,3 +351,6 @@ MigrationBackup/
 
 LongSorter.dll
 DSP_LongSorter.zip
+
+#JetBrains IDEs
+.idea
