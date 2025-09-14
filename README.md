@@ -1,6 +1,6 @@
 # LongSorter 
 
-Mod for Dyson Sphere Program. Needs BepInEx.
+Mod for Dyson Sphere Program. Needs BepInEx. Forked from hetima/DSP_LongSorter.
 
 Hold down `Ctrl` key when building the sorter to loosen the length and angle restriction (about up to 5x). The sorters created will continue to work even if this mod is disabled.  
 If the building candidate is too skewed, you can press the `Shift` key at the same time to increase restrictions of the angle and set it straight.
@@ -25,6 +25,11 @@ It does not support blueprint.
 ---
 
 ## Release Notes
+
+### v1.3.2
+- Update for 0.10.32.25779 game version
+- Removed embedded game file dependency
+- Changed build opcode usage to prevent breaking
 
 ### v1.2.2
 - Update for 0.9.27.15466 game version

@@ -1,38 +1,32 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using System;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace LongSorter
 {
-    [BepInPlugin(__GUID__, __NAME__, "1.3.2")]
+    [BepInPlugin(Guid, Name, "1.3.2")]
     public class LongSorter : BaseUnityPlugin
     {
-        public const string __NAME__ = "LongSorter";
-        public const string __GUID__ = "com.hetima.dsp." + __NAME__;
+        private const string Name = "LongSorter";
+        private const string Guid = "com.sylf.dsp." + Name;
 
         private static ManualLogSource _logger;
 
         private void Awake()
         {
-            _logger = base.Logger;
-            //Logger.LogInfo("Awake");
-
-            new Harmony(__GUID__).PatchAll(typeof(Patch));
-            _logger.LogMessage("Started long sorter");
+            _logger = Logger;
+            new Harmony(Guid).PatchAll(typeof(Patch));
         }
 
 
         internal static class Patch
         {
-            public static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(IEnumerable<CodeInstruction> instructions)
+            private static IEnumerable<CodeInstruction> CheckBuildConditions_Transpiler(IEnumerable<CodeInstruction> instructions)
             {
                 //if (a > b)
                 //{
@@ -44,27 +38,20 @@ namespace LongSorter
                 var patchPos = new List<int>(2);
                 var f = AccessTools.Field(typeof(BuildPreview), nameof(BuildPreview.condition));
                 var m = typeof(Patch).GetMethod("LengthCorrection");
-                try
+                for (var i = 0; i < ins.Count; i++)
                 {
-                    for (var i = 0; i < ins.Count; i++)
+                    if (ins[i].opcode != OpCodes.Stfld || !(ins[i].operand is FieldInfo o) || o != f)
+                        continue;
+                    //EBuildCondition.TooFar == 14
+                    const int tooFarOperand = (int)EBuildCondition.TooFar;
+                    if (ins[i - 1].opcode != OpCodes.Ldc_I4_S || !(ins[i - 1].operand is sbyte o2) || o2 != tooFarOperand
+                        || (ins[i - 3].opcode != OpCodes.Ble_Un && ins[i - 3].opcode != OpCodes.Ble_Un_S))
+                        continue;
+                    patchPos.Add(i - 5);
+                    if (patchPos.Count == 2)
                     {
-                        if (ins[i].opcode != OpCodes.Stfld || !(ins[i].operand is FieldInfo o) || o != f)
-                            continue;
-                        //EBuildCondition.TooFar == 13
-                        const int tooFarOperand = (int)EBuildCondition.TooFar;
-                        if (ins[i - 1].opcode != OpCodes.Ldc_I4_S || !(ins[i - 1].operand is sbyte o2) || o2 != tooFarOperand
-                            || (ins[i - 3].opcode != OpCodes.Ble_Un && ins[i - 3].opcode != OpCodes.Ble_Un_S))
-                            continue;
-                        patchPos.Add(i - 5);
-                        if (patchPos.Count == 2)
-                        {
-                            break;
-                        }
+                        break;
                     }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex);
                 }
 
                 for (var i = 0; i < ins.Count; i++)
@@ -223,7 +210,7 @@ namespace LongSorter
             public static bool PlanetFactory_OnInserterBuilt_Prefix() => false;
         }
 
-        public class BuildToolAccess : BuildTool
+        private class BuildToolAccess : BuildTool
         {
             public static int TmpColsLength()
             {
